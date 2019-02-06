@@ -1,6 +1,6 @@
 {
   "name": "@playframe/promisync",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Promises that Sync as you prefer",
   "main": "index.js",
   "scripts": {
