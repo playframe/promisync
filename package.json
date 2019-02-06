@@ -25,5 +25,8 @@
   "homepage": "https://github.com/playframe/proxy#readme",
   "devDependencies": {
     "coffeescript": "^2.3.2"
+  },
+  "dependencies": {
+    "@playframe/proxy": "^1.0.0"
   }
 }
