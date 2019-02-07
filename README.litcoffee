@@ -96,9 +96,9 @@ exception recovery
 ```js
 const trySyncronously = (f)=> try{f()} catch(e){f.r(e)}
 const PromiSync = promisync({
-      then: syncronously,
-      catch: syncronously,
-      finally: syncronously
+      then: trySyncronously,
+      catch: trySyncronously,
+      finally: trySyncronously
 })
 PromiSync.Promise.resolve(1)
   .then(...)
