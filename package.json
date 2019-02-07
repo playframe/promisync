@@ -20,9 +20,9 @@
   "author": "Kiryl Yermakou <rma4ok@gmail.com>",
   "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/playframe/proxy/issues"
+    "url": "https://github.com/playframe/promisync/issues"
   },
-  "homepage": "https://github.com/playframe/proxy#readme",
+  "homepage": "https://github.com/playframe/promisync#readme",
   "devDependencies": {
     "coffeescript": "^2.3.2"
   },
