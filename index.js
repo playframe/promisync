@@ -207,7 +207,7 @@ module.exports = (sync) => {
             return _chain = ((_chain) => {
               return () => {
                 _chain();
-                return delayed(wrap);
+                delayed(wrap);
               };
             })(_chain);
           }

@@ -209,6 +209,7 @@ are _prefixed
               _chain = do (_chain)=>=>
                 _chain()
                 delayed wrap
+                return
           ) wrap
 
 Now lets copy all methods from `sync` into returned
