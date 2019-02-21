@@ -112,7 +112,7 @@
 // ## Annotated Source
 
 // Importing [@playframe/proxy](https://github.com/playframe/proxy)
-var REJECTED, mark_rejected, no_op, proxy;
+var ID, REJECTED, mark_rejected, proxy;
 
 proxy = require('@playframe/proxy');
 
@@ -149,7 +149,7 @@ module.exports = (sync) => {
       // are _prefixed
       _done = false;
       _result = null;
-      _chain = no_op;
+      _chain = ID;
       resolve = (result) => {
         if (!_done) {
           _done = true;
@@ -174,17 +174,16 @@ module.exports = (sync) => {
       });
       wrap.r = reject;
       return make_proxy(function(method, f, recover) {
-        var delayed;
+        var fill;
         if (recover) {
           return this._h(method, f).catch(recover);
         }
-        delayed = sync[method];
-        wrap = method === 'finally' ? (x) => {
+        fill = method === 'finally' ? (x) => {
           f(x);
           return _result;
         } : method === 'catch' ? (x) => {
           if (_result[REJECTED]) {
-            delete _result[REJECTED];
+            _result[REJECTED] = false;
             return f(_result, x);
           } else {
             return _result;
@@ -197,21 +196,21 @@ module.exports = (sync) => {
           }
         };
         // ✌️ combinator for nested chains
-        return chained((wrap) => {
+        return chained((fill) => {
           if (_done) {
-            return delayed(wrap);
+            return sync[method](fill);
           } else {
             // chain of closures to call later
             // `do` does `_chain` closure
-            // and returns second `=>`
+            // and returns the second `=>`
             return _chain = ((_chain) => {
               return () => {
                 _chain();
-                delayed(wrap);
+                sync[method](fill);
               };
             })(_chain);
           }
-        })(wrap);
+        })(fill);
       });
     };
   };
@@ -224,19 +223,17 @@ module.exports = (sync) => {
     return chain;
   }), {
     Promise: Promise = (f) => {
-      var _awaiting;
-      _awaiting = no_op;
+      var _fill, p;
+      _fill = ID;
+      p = chained((fill) => {
+        return _fill = fill;
+      })(ID);
+      
       // f(resolve, reject)
-      f(((x) => {
-        return _awaiting(x);
-      }), (x) => {
-        return _awaiting(mark_rejected(x));
+      f(_fill, (x) => {
+        return _fill(mark_rejected(x));
       });
-      return chained((resolver) => {
-        return _awaiting = (x) => {
-          return resolver(x);
-        };
-      })(no_op);
+      return p;
     }
   });
   Promise.resolve = (x) => {
@@ -280,7 +277,7 @@ module.exports = (sync) => {
   return chain;
 };
 
-// Let's call it `id` function next time
-no_op = (x) => {
+// Identity function
+ID = (x) => {
   return x;
 };

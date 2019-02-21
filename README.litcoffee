@@ -154,7 +154,7 @@ are _prefixed
 
         _done = false
         _result = null
-        _chain = no_op
+        _chain = ID
 
         resolve = (result)=>
           unless _done
@@ -179,15 +179,13 @@ are _prefixed
           if recover
             return @_h(method, f).catch recover
 
-          delayed = sync[method]
-
-          wrap = if method is 'finally'
+          fill = if method is 'finally'
             (x)=> f x; _result
 
           else if method is 'catch'
             (x)=>
               if _result[REJECTED]
-                delete _result[REJECTED]
+                _result[REJECTED] = false
                 f _result, x
               else
                 _result
@@ -199,18 +197,18 @@ are _prefixed
                 f _result, x
 
           # ✌️ combinator for nested chains
-          chained((wrap)=>
+          chained((fill)=>
             if _done
-              delayed wrap
+              sync[method] fill
             else
               # chain of closures to call later
               # `do` does `_chain` closure
-              # and returns second `=>`
+              # and returns the second `=>`
               _chain = do (_chain)=>=>
                 _chain()
-                delayed wrap
+                sync[method] fill
                 return
-          ) wrap
+          ) fill
 
 Now lets copy all methods from `sync` into returned
 `chain` object by wrapping them in `chained`.
@@ -222,13 +220,15 @@ Also lets define `Promise` property of our
         chain
       ),
         Promise: Promise = (f)=>
-          _awaiting = no_op
+          _fill = ID
+          
+          p = chained((fill)=>
+            _fill = fill
+          ) ID
+          
           # f(resolve, reject)
-          f ((x)=> _awaiting x), (x)=> _awaiting mark_rejected x
-
-          chained((resolver)=>
-            _awaiting = (x)=> resolver x
-          ) no_op
+          f _fill, (x)=> _fill mark_rejected x
+          p
 
       Promise.resolve = (x)=> chain.then => x
       Promise.reject = (x)=> chain.catch => mark_rejected x
@@ -254,5 +254,5 @@ Also lets define `Promise` property of our
       chain
 
 
-    # Let's call it `id` function next time
-    no_op = (x)=> x
+    # Identity function
+    ID = (x)=> x
